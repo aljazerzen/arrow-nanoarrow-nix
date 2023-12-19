@@ -1,0 +1,69 @@
+From cfcf3d18c7f7c862d29408392563268d0f7206d6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alja=C5=BE=20Mur=20Er=C5=BEen?= <aljaz@edgedb.com>
+Date: Tue, 2 Jan 2024 18:56:32 +0100
+Subject: [PATCH] patch
+
+---
+ CMakeLists.txt        | 24 +++++++++++++++++++++++-
+ ci/nanoarrow.cmake.in |  7 +++++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+ create mode 100644 ci/nanoarrow.cmake.in
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1e44b6f..7ffbef3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -144,13 +144,35 @@ else()
+     endif()
+   endif()
+ 
+-  install(TARGETS nanoarrow DESTINATION lib)
++  install(
++    EXPORT nanoarrowTargets
++    FILE nanoarrowTargets.cmake
++    DESTINATION "lib/cmake/nanoarrow"
++  )
++
++  install(
++    TARGETS nanoarrow
++    EXPORT nanoarrowTargets
++    DESTINATION lib
++  )
+   install(DIRECTORY src/
+           DESTINATION include
+           FILES_MATCHING
+           PATTERN "*.h")
+   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/generated/nanoarrow_config.h
+           DESTINATION include/nanoarrow)
++
++  include(CMakePackageConfigHelpers)
++  configure_package_config_file(
++    ci/nanoarrow.cmake.in
++    "${CMAKE_CURRENT_BINARY_DIR}/nanoarrowConfig.cmake"
++    INSTALL_DESTINATION "lib/cmake/nanoarrow"
++  )
++
++  install(
++    FILES "${CMAKE_CURRENT_BINARY_DIR}/nanoarrowConfig.cmake"
++    DESTINATION "lib/cmake/nanoarrow"
++  )
+ endif()
+ 
+ # Always build integration test if building tests
+diff --git a/ci/nanoarrow.cmake.in b/ci/nanoarrow.cmake.in
+new file mode 100644
+index 0000000..374fba6
+--- /dev/null
++++ b/ci/nanoarrow.cmake.in
+@@ -0,0 +1,7 @@
++@PACKAGE_INIT@
++
++include(CMakeFindDependencyMacro)
++
++include("${CMAKE_CURRENT_LIST_DIR}/nanoarrowTargets.cmake")
++
++check_required_components(nanoarrow)
+\ No newline at end of file
+-- 
+2.40.1
+
